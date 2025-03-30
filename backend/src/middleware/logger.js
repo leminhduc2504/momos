@@ -12,7 +12,6 @@ const winstonLogger = winston.createLogger({
   ]
 });
 
-// Add console transport for non-production environments
 if (process.env.NODE_ENV !== 'production') {
   winstonLogger.add(new winston.transports.Console({
     format: winston.format.combine(
@@ -24,7 +23,6 @@ if (process.env.NODE_ENV !== 'production') {
   }));
 }
 
-// Express middleware to log requests
 const loggerMiddleware = (req, res, next) => {
   winstonLogger.info(JSON.stringify({
     method: req.method,
@@ -32,7 +30,7 @@ const loggerMiddleware = (req, res, next) => {
     ip: req.ip,
     userAgent: req.get('user-agent'),
     timestamp: new Date().toISOString()
-  }, null, 2)); // Pretty-print the JSON
+  }, null, 2)); 
   next();
 };
 

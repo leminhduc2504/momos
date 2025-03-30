@@ -2,21 +2,21 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 export let options = {
-  vus: 50,  // 100 Virtual Users (simulating 100 concurrent users)
-  iterations: 5000, // Run test for 30 seconds
+  vus: 5000, 
+  iterations: 5000, 
 };
 
 export default function () {
   let url = 'http://localhost:3001/api/scraper/scrape';
   let payload = JSON.stringify({
-    urls: ['https://books.toscrape.com/catalogue/that-darkness-gardiner-and-renner-1_743/index.html']
+    urls: ['https://www.w3schools.com/html/html_images.asp'],
   });
 
   let params = {
     headers: {
       'Accept': 'application/json, text/plain, */*',
       'Accept-Language': 'en-US,en;q=0.9,vi;q=0.8',
-      'Authorization': 'Basic YWRtaW46cGFzc3dvcmQ=',
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzQzMzQ1ODQ1LCJleHAiOjE3NDMzODkwNDV9.2gmHj0dQ-ZR2NsEN67BjLQM6yvr-_viKEKiEpu169vE',
       'Connection': 'keep-alive',
       'Content-Type': 'application/json',
       'Origin': 'http://localhost:3000',
@@ -33,12 +33,10 @@ export default function () {
 
   let res = http.post(url, payload, params);
 
-  // Check if the response is successful
   check(res, {
     'Status is 200': (r) => r.status === 200,
     'Response time < 500ms': (r) => r.timings.duration < 500,
   });
 
-  // Simulate user think time (wait 1 second between requests)
-  sleep(1);
+  sleep(0.1);
 }

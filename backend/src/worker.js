@@ -2,16 +2,14 @@ const { Worker } = require('bullmq');
 const Redis = require('ioredis');
 const { pool } = require('./config/database');
 const { winstonLogger } = require('./middleware/logger');
-const { scrapeMediaFromUrl } = require('./bullmq/scraper'); // Import scraper
+const { scrapeMediaFromUrl } = require('./bullmq/scraper'); 
 
-// Redis Connection
 const connection = new Redis({
-  host: process.env.REDIS_HOST || 'redis', // Use Redis service name in Docker
+  host: process.env.REDIS_HOST || 'redis',
   port: 6379,
   maxRetriesPerRequest: null
 });
 
-// Worker Process
 const worker = new Worker(
   'scrapeQueue',
   async (job) => {
@@ -21,32 +19,32 @@ const worker = new Worker(
     const mediaUrls = await scrapeMediaFromUrl(url);
 
     if (mediaUrls.length > 0) {
-      const bulkInsertData = mediaUrls.map((media) => [url, media.url, media.type]);
-
+      const bulkInsertData = mediaUrls.flatMap((media) => [url, media.url, media.type]);
+    
       try {
+        const placeholders = mediaUrls.map(() => '(?, ?, ?)').join(','); // Create (?,?,?) for each row
         await pool.query(
-          'INSERT INTO media_urls (source_url, media_url, media_type) VALUES ?',
-          [bulkInsertData]
+          `INSERT INTO media_urls (source_url, media_url, media_type) VALUES ${placeholders}`,
+          bulkInsertData
         );
-        winstonLogger.info(`✅ Successfully scraped & saved: ${url}`);
+        winstonLogger.info(`Successfully scraped & saved: ${url}`);
       } catch (dbError) {
-        winstonLogger.error(`❌ Database error for ${url}: ${dbError.message}`);
+        winstonLogger.error(`Database error for ${url}: ${dbError.message}`);
       }
     }
 
     return mediaUrls.length;
   },
   { connection,
-    concurrency: 10},
+    concurrency: 50},
 );
 
-// Log Worker Events
 worker.on('completed', (job, result) => {
-  winstonLogger.info(`🎯 Job ${job.id} completed: Scraped ${result} media items.`);
+  winstonLogger.info(`Job ${job.id} completed: Scraped ${result} media items.`);
 });
 
 worker.on('failed', (job, err) => {
-  winstonLogger.error(`❌ Job ${job.id} failed: ${err.message}`);
+  winstonLogger.error(`Job ${job.id} failed: ${err.message}`);
 });
 
-console.log('🔧 Worker is listening for jobs...');
+console.log('Worker is listening for jobs');

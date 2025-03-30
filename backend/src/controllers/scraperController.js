@@ -16,16 +16,15 @@ const scrapeUrls = async (req, res) => {
       return res.status(400).json({ error: 'URLs must be provided as a non-empty array' });
     }
 
-    // Add each URL as a job to the queue
     for (const url of urls) {
       await scrapeQueue.add('scrapeJob', { url });
     }
 
-    winstonLogger.info(`✅ Added ${urls.length} jobs to the queue.`);
+    winstonLogger.info(`Added ${urls.length} jobs to the queue.`);
     res.json({ success: true, message: 'Scraping jobs added to queue', totalJobs: urls.length });
 
   } catch (error) {
-    winstonLogger.error(`❌ Error adding jobs to queue: ${error.message}`);
+    winstonLogger.error(`Error adding jobs to queue: ${error.message}`);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
@@ -67,7 +66,7 @@ const getMediaUrls = async (req, res, next) => {
       },
     });
   } catch (error) {
-    winstonLogger.error(`❌ Error retrieving media URLs: ${error.message}`);
+    winstonLogger.error(`Error retrieving media URLs: ${error.message}`);
     next(error);
   }
 };

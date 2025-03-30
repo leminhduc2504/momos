@@ -4,7 +4,7 @@ const { winstonLogger } = require('../middleware/logger');
 
 const scrapeMediaFromUrl = async (url) => {
     try {
-        winstonLogger.info(`🔍 Scraping URL: ${url}`);
+        winstonLogger.info(`Scraping URL: ${url}`);
         
         const response = await axios.get(url, { timeout: 10000 });
         const $ = cheerio.load(response.data);
@@ -26,10 +26,10 @@ const scrapeMediaFromUrl = async (url) => {
             }
         });
 
-        winstonLogger.info(`✅ Scraped ${mediaUrls.length} media items from ${url}`);
+        winstonLogger.info(`Scraped ${mediaUrls.length} media items from ${url}`);
         return mediaUrls;
     } catch (error) {
-        winstonLogger.error(`❌ Error scraping ${url}: ${error.message}`);
+        winstonLogger.error(`Error scraping ${url}: ${error.message}`);
         return [];
     }
 };

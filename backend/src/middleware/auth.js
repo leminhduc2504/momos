@@ -1,17 +1,23 @@
-const basicAuth = require('basic-auth');
+const jwt = require('jsonwebtoken');
 
-const authMiddleware = (req, res, next) => {
-  const user = basicAuth(req);
+const SECRET_KEY = 'secretKey'; 
 
-  const username = process.env.AUTH_USERNAME || 'admin';
-  const password = process.env.AUTH_PASSWORD || 'password';
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
 
-  if (!user || user.name !== username || user.pass !== password) {
-    res.set('WWW-Authenticate', 'Basic realm="Authorization Required"');
-    return res.status(401).send('Authentication required');
+  if (!token) {
+    return res.status(401).json({ message: 'Access Denied: No Token Provided' });
   }
 
-  next();
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: 'Invalid or Expired Token' });
+    }
+
+    req.user = user;
+    next();
+  });
 };
 
-module.exports = { authMiddleware };
+module.exports = authenticateToken;
