@@ -32,7 +32,7 @@ services:
   worker:
     build: 
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.worker
     command: node src/worker.js
     depends_on:
       - redis
